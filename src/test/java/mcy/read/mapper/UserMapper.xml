@@ -3,8 +3,61 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="mcy.read.mapper.UserMapper">
-    <select id="getUser" parameterType="integer" resultType="user">
+    <resultMap id="user2" type="mcy.read.po.User">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" javaType="String" jdbcType="VARCHAR" typeHandler="mcy.read.typeHandler.MyStringTypeHandler"/>
+        <result column="age" property="age" jdbcType="INTEGER" javaType="integer"/>
+    </resultMap>
+
+    <select id="getUser" parameterType="integer" resultMap="user2">
         select * from user where id=#{id}
+    </select>
+    <select id="getUserByID" resultMap="user2">
+        select * from user where id=#{id}
+    </select>
+    <select id="getUserByMap" parameterType="map" resultMap="user2">
+        select * from user where id=#{id}
+    </select>
+    <select id="getUserByBean" parameterType="mcy.read.po.User" resultMap="user2">
+        select * from user where id=#{id}
+    </select>
+    <select id="getUsers" parameterType="integer" resultMap="user2">
+        select * from user
+    </select>
+
+
+    <insert id="insertUserAndGetID" parameterType="mcy.read.po.User" useGeneratedKeys="true" keyProperty="id">
+        insert into user (name, age) values (#{name},#{age})
+    </insert>
+    <insert id="insertUserAndGetIDBySelf" parameterType="mcy.read.po.User" useGeneratedKeys="true" keyProperty="id">
+        <selectKey keyProperty="id" resultType="integer" order="BEFORE">
+            select if(max(id) is null ,1,max(id)+2)as newId from user
+        </selectKey>
+        insert into user (name, age) values (#{name},#{age})
+    </insert>
+
+    <resultMap id="user3" type="mcy.read.po.UserInfo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="age" property="age"/>
+        <association property="card" javaType="mcy.read.po.Card">
+            <id column="cid" property="id"/>
+            <result column="user_id" property="userID"/>
+            <result column="nativ" property="nativ"/>
+        </association>
+
+        <!-- 注意collection只查询一条数据，原因是别名id重复 -->
+        <collection property="records" ofType="mcy.read.po.Record">
+            <id column="rid" property="id"/>
+            <result column="user_id" property="userID"/>
+            <result column="record" property="record"/>
+        </collection>
+    </resultMap>
+
+    <select id="getUserInfroByID" parameterType="integer" resultMap="user3">
+        select u.id,u.age,u.name,c.id cid,c.user_id,c.nativ,
+         r.id rid,r.user_id,r.record from user u ,card c,record r
+        where u.id = c.user_id and u.id=r.user_id and u.id=#{id}
     </select>
 
 </mapper>
