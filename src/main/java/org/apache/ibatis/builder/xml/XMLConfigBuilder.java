@@ -103,19 +103,29 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
+      //从节点properties中加载外部配置文件中配置信息
       propertiesElement(root.evalNode("properties"));
+      //对mybatis功能进行设置
+      //节点settings信息转换为properties形式存储
+      //主要功能是，缓存开启、自动设置主键等
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
+      //别名注册并存储
       typeAliasesElement(root.evalNode("typeAliases"));
+      //插件设定
       pluginElement(root.evalNode("plugins"));
       objectFactoryElement(root.evalNode("objectFactory"));
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      //环境变量设置，主要针对数据源和事务
       environmentsElement(root.evalNode("environments"));
+      //数据库厂商标识
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+      //类型处理器,对数据库中数据类型按照自定义数据类型进行类型转换
       typeHandlerElement(root.evalNode("typeHandlers"));
+      //映射
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -213,6 +223,16 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 加载properties资源,分别
+   * 存储键值对信息到
+   * Configuration的variables
+   * 和
+   * XPathParser的variables
+   * 两个地方
+   * @param context
+   * @throws Exception
+   */
   private void propertiesElement(XNode context) throws Exception {
     if (context != null) {
       Properties defaults = context.getChildrenAsProperties();
@@ -221,15 +241,20 @@ public class XMLConfigBuilder extends BaseBuilder {
       if (resource != null && url != null) {
         throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
       }
+      //两次加载properties文件
       if (resource != null) {
+        //一次从xml config 配置文件中加载
         defaults.putAll(Resources.getResourceAsProperties(resource));
       } else if (url != null) {
         defaults.putAll(Resources.getUrlAsProperties(url));
       }
+
+      //一次直接从properties配置文件中加载
       Properties vars = configuration.getVariables();
       if (vars != null) {
         defaults.putAll(vars);
       }
+
       parser.setVariables(defaults);
       configuration.setVariables(defaults);
     }

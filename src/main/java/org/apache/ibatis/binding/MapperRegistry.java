@@ -64,10 +64,12 @@ public class MapperRegistry {
       }
       boolean loadCompleted = false;
       try {
+        //缓存通过配置的接口来创建的映射的类型代理工厂
         knownMappers.put(type, new MapperProxyFactory<T>(type));
         // It's important that the type is added before the parser is run
         // otherwise the binding may automatically be attempted by the
         // mapper parser. If the type is already known, it won't try.
+        //缓存通过注释的接口来创建类型代理工厂
         MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
         parser.parse();
         loadCompleted = true;

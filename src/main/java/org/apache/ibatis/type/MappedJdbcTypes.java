@@ -22,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 映射Jdbc类型注释
  * @author Eduardo Macarron
  */
 @Documented

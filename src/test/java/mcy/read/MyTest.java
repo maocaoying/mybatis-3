@@ -22,4 +22,5 @@ public class MyTest extends MyBaseTest {
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
         System.out.println(userMapper.getUserByID(1));
     }
+
 }
